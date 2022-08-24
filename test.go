@@ -6,6 +6,7 @@ import (
 
 	// Model "simple-go/model"
 	Funct "simple-go/functions"
+	"simple-go/utils"
 	// "strings"
 )
 
@@ -28,6 +29,12 @@ func main() {
 	// fmt.Println(result)
 
 	Funct.Interface()
+
+	// util
+	var strList = []string{"hello", "my", "world"}
+	var str = "hello"
+
+	m := new(utils.MyString)
+	isExist := m.IsExist(strList, str)
+	fmt.Println(isExist) // >>> true
 }
-
-
