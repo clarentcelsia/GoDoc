@@ -5,8 +5,9 @@ import (
 	// "time"
 
 	// Model "simple-go/model"
-
 	"simple-go/utils"
+
+	"github.com/gin-gonic/gin"
 	// "strings"
 )
 
@@ -15,29 +16,12 @@ func init() {
 }
 
 func main() {
-	// person := Model.SetNewPerson("Hanny", 20, "22-02-12")
-	// name := person.GetName()
-	// fmt.Println(name)
-
-	//https://pkg.go.dev/strings#Contains
-	// data := []string{"apple", "mango"}
-	// var result []string = Funct.FunctionAsParams(data, func(cases string) bool{
-	// 	//todo: what do you want to do as a feedback of the func == string[]
-	// 	return strings.Contains(cases, "o") //return bool whether "o" is within cases
-	// })
-
-	// fmt.Println(result)
-
-	// Funct.Interface()
-
-	// util
-	// var strList = []string{"hello", "my", "world"}
-	// var str = "hello"
-
 	// m := new(utils.MyString)
 	// isExist := m.IsExist(strList, str)
 	// fmt.Println(isExist) // >>> true
 
-	//=====================
-	fmt.Println(utils.CurrencyConverter("30000", "IDR", ",", ".", "%s %v", 2))
+	r := gin.Default()
+	r.GET("/pagination", utils.GetFiles)
+	r.Run(":9000")
+
 }
