@@ -5,9 +5,8 @@ import (
 	// "time"
 
 	// Model "simple-go/model"
-	"simple-go/utils"
-
-	"github.com/gin-gonic/gin"
+	// "simple-go/utils"
+	"simple-go/functions"
 	// "strings"
 )
 
@@ -20,8 +19,9 @@ func main() {
 	// isExist := m.IsExist(strList, str)
 	// fmt.Println(isExist) // >>> true
 
-	r := gin.Default()
-	r.GET("/pagination", utils.GetFiles)
-	r.Run(":9000")
+	// r := gin.Default()
+	// r.GET("/pagination", utils.GetFiles)
+	// r.Run(":9000")
 
+	functions.Goroutines()
 }
