@@ -2,15 +2,12 @@ package main
 
 import (
 	"fmt"
-	"reflect"
-	"strconv"
-	"strings"
 
 	// "time"
 
 	// Model "simple-go/model"
-	"simple-go/utils"
-	// "simple-go/functions"
+	// "simple-go/utils"
+	"simple-go/functions"
 	// "strings"
 )
 
@@ -27,4 +24,6 @@ func main() {
 	// r.GET("/pagination", utils.GetFiles)
 	// r.Run(":9000")
 
-	functions.Goroutines()
+	// functions.Goroutines()
+	functions.Reflect()
+}

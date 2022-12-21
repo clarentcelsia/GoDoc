@@ -153,3 +153,38 @@ func StructAsMapKeysAndValues() {
 	fmt.Println(xmap) // >>> map[{Angel 18}:Student 2 {Moana 8}: New Student]
 
 }
+
+// This reflect is a great function to working with struct
+func Reflect() {
+	var _struct struct {
+		Prop1 string
+		Prop2 int
+		Prop3 float64
+	}
+
+	// Assign value to struct
+	v := []interface{}{
+		"String Value",
+		0,
+		0.1,
+	}
+
+	struct_value := reflect.ValueOf(&_struct)
+
+	for key, val := range v {
+		// Call indirect to check the value of pointer _Struct by its field
+		field := reflect.Indirect(struct_value).Field(key)
+		if field.Kind() != reflect.Invalid {
+			if field.Kind() == reflect.String {
+				field.SetString(val.(string))
+			} else if field.Kind() == reflect.Float64 {
+				field.SetFloat(val.(float64))
+			} else if field.Kind() == reflect.Int {
+				i := val.(int)
+				field.SetInt(int64(i))
+			}
+		}
+	}
+
+	fmt.Println("_STRUCT : ", _struct)
+}
