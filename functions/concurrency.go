@@ -1,6 +1,16 @@
 package functions
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"runtime"
+	"simple-go/model"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+)
 
 /**
 GOROUTINES AND CHANNEL
@@ -52,7 +62,7 @@ func Channels() {
 	fmt.Println(<-mug) // >>> fanta
 }
 
-func Goroutines() {
+func BasicGoroutines() {
 	meatball := func(num int, temp chan int) {
 		temp <- num
 	}
@@ -72,4 +82,123 @@ func Goroutines() {
 	fmt.Printf("%d", <-bowl) // >>> 3
 
 	close(bowl)
+}
+
+// *model.Job refers to the same memory addr
+// context tells us about this method is about to be compiled
+// with this ctx, we able to tell golang when to stop getting result from
+// network call.
+func Goroutines(*gin.Context) <-chan *model.Job {
+	res := make(chan *model.Job, 1)
+
+	go func() {
+		resp, err := http.Get("http://localhost:9000/pagination")
+		if err != nil {
+			res <- &model.Job{
+				Responses: nil,
+				Errors:    fmt.Errorf("unable to fetch data, %s", err.Error()),
+			}
+			return
+		}
+
+		defer resp.Body.Close()
+
+		bytresp, _ := ioutil.ReadAll(resp.Body)
+		var respmap interface{}
+		json.Unmarshal(bytresp, &respmap)
+
+		res <- &model.Job{
+			Responses: respmap,
+			Errors:    nil,
+		}
+
+	}()
+
+	return res
+
+}
+
+// To wait for multiple goroutines to finish, we can use a wait group.
+func WaitGroup() {
+	var w sync.WaitGroup
+
+	doJob := func(i int) {
+		defer w.Done() // tell if the job has finished
+		fmt.Printf("Worker %d is doing a job \n", i)
+	}
+
+	var workers = 10
+	for i := 0; i < workers; i++ {
+		fmt.Println("A new job is coming!")
+		w.Add(1) // tell group there's a new job doing by worker now
+		doJob(i + 1)
+	}
+
+	w.Wait() // wait till all jobs has finished by worker then go to the next command
+	fmt.Println("All task has finished!")
+}
+
+// This occurs when 2 or more goroutines have shared data and interact it simultaneously.
+// By example, goroutine funct A and go func B need the same resource at the same time
+// in that case, both (go) func in a Race Condition in which while the app is running
+// both function will do their job concurrently,
+// while funct A is doing read from resource X it's the same as the funct B
+// that causes data/resource they use will be updated once where it's supposed to be (updated) twice
+// cause both func initially read the same value of the resource.
+
+// note.
+// basically, go tries to avoid this race condition on its own
+// and the possibility of its success when the workers work behind relatively small.
+// read. cooperative multithreading.
+
+func RaceCondition() {
+	var (
+		workers = 1000
+
+		w   sync.WaitGroup
+		res model.Resource
+	)
+
+	w.Add(workers) // call n workers in their separate goroutines
+	for i := 0; i < workers; i++ {
+		go func() {
+			runtime.Gosched()
+
+			res.Add() // n workers doing the same job at the same time
+			w.Done()
+		}()
+	}
+
+	w.Wait()
+
+	fmt.Println(res.Sum())
+}
+
+// to handle race condition
+func Mutex() {
+	// var mtx sync.Mutex
+	var w sync.WaitGroup
+
+	var totalJobs = 1000
+	var additionalJobReq = 100
+
+	// mutex already defined in struct
+	var req model.Resource
+
+	for i := 0; i < totalJobs; i++ {
+		w.Add(1)
+		go func() {
+			for j := 0; j < additionalJobReq; j++ {
+				//Lock for other goroutines access the shared variable
+				// mtx.Lock()
+				req.Add()
+				// mtx.Unlock()
+			}
+			w.Done()
+		}()
+	}
+
+	w.Wait()
+
+	fmt.Println(req.Sum())
 }

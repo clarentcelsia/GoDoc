@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 // Utility for search specific item in list
@@ -79,4 +80,8 @@ func CurrencyWithPrecision(decimalSep string, precision int) string {
 	newstr = decimalSep + newstr
 	return newstr
 
+}
+
+func Tracker(start time.Time) time.Duration {
+	return time.Since(start)
 }
