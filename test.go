@@ -45,7 +45,8 @@ func main() {
 	// r.GET("/", Handler)
 	// r.Run(":9000")
 
-	functions.Mutex()
+	// functions.Mutex()
+	functions.WaitGroupChannel()
 }
 
 func Handler(c *gin.Context) {

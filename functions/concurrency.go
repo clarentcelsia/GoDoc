@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"simple-go/model"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,13 +18,20 @@ GOROUTINES AND CHANNEL
 
 Goroutines is a lightweight thread.
 A function marked/started by "go" will run independently.
+Are functions which executes """concurrently along with""" the main program flow.
+
+Goroutine interacts with other goroutines using a communication mechanism called Channels.
 
 Channel is a pipeline for sending & receiving data.
-Channel provides a goroutine to send a data to another goroutine as receiver.
+Channel provides a goroutine to send a data to another goroutine as receiver,
+	which means [One goroutine writes the data into the channel and the other goroutine can read from it]
+
+Buffered Channel is a channel with capacity.
 */
 
 // CONCURRENCY & PARALLELISM
 // https://www.golangprograms.com/go-language/concurrency.html
+
 /**
 Concurrency is about to handle numerous tasks at once but
 only be doing a single tasks at a time.
@@ -32,6 +40,44 @@ Parallelism is about doing lots of tasks at once.
 This means that even if we have two tasks,
 they are continuously working without any breaks in between them
 */
+
+func BasicChannels() {
+	//var c chan int >>> has to be initialized or
+	c := make(chan int) // >>> Go allocates memory for c (recommended) or
+	//c := make(chan int, 1) >>> channel with buffer cap
+
+	c <- 5       // send(write) value to c
+	res := <-c   // retrieve value from c
+	println(res) // >>> 5
+
+	// note. channel that left open will be collected by garbage collector if it's no longer used.
+	close(c)
+}
+
+// By default, channel is bidirectional (r/w).
+// The unidirectional channel is used to provide the type-safety of the program
+// so, that the program gives less error.
+func UnidirectionalChannel() {
+	// read-only channel/receiving
+	// r := make(<- chan int)
+
+	// write-only channel/sending
+	// w := make(chan <- int)
+
+	// example==========
+	// Params 's' in sendfunc will be written.
+	sendfunc := func(s chan<- string) {
+		s <- "This s is written by x"
+	}
+
+	// This bidirectional channel...
+	write_read_me := make(chan string)
+	// will be converted to write-only channel '''inside goroutine'''...
+	go sendfunc(write_read_me)
+	// '''outside goroutine''' will be back to bidirectional channel
+	fmt.Println(<-write_read_me)
+
+}
 
 func Channels() {
 	// In buffered channel there is a capacity to hold one or more values
@@ -60,6 +106,48 @@ func Channels() {
 
 	mug <- "fanta"
 	fmt.Println(<-mug) // >>> fanta
+}
+
+func ChannelBlockingWork() {
+	s1 := make(chan string)
+	s2 := make(chan string)
+
+	go func() {
+		s1 <- "1 has been received data"
+	}()
+
+	go func() {
+		time.Sleep(2 * time.Second)
+		s2 <- "2 has been received data"
+	}()
+
+	for i := 0; i < 2; i++ {
+		/* * as go documentation about select:*/
+		select {
+		// [ If one or more of the communications can proceed,
+		// 		a single one that can proceed is chosen via a uniform pseudo-random selection.]
+
+		// technically, this is likely to be in race condition
+		// data that will be chosen/printed first is the data that has been finished first.
+
+		case data1 := <-s1:
+			fmt.Println(data1)
+
+		case data2 := <-s2:
+			fmt.Println(data2)
+
+			// Otherwise, '''if there is a default case, that case is chosen'''.
+
+			// If there is no default case, the "select" statement
+			// '''blocks until at least one of the communications can proceed'''.
+
+			// default:
+			// 	fmt.Println("default")
+		}
+	}
+
+	// Channel will block this line until all (channel) data is consumed by another goroutine.
+	fmt.Println("FINISHED")
 }
 
 func BasicGoroutines() {
