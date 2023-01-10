@@ -46,7 +46,7 @@ func main() {
 	// r.Run(":9000")
 
 	// functions.Mutex()
-	functions.WaitGroupChannel()
+	// functions.WaitGroupChannel()
 }
 
 func Handler(c *gin.Context) {
