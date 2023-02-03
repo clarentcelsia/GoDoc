@@ -22,3 +22,23 @@ func (r *Resource) Add() {
 func (r *Resource) Sum() int {
 	return r.count
 }
+
+type TaskQueue struct {
+	items []interface{}
+	lock  sync.Mutex
+}
+
+func (t *TaskQueue) Add(items interface{}) {
+	t.lock.Lock() // lock other writes
+	defer t.lock.Unlock()
+	t.items = append(t.items, items)
+}
+
+func (t *TaskQueue) Remove() interface{} {
+	t.lock.Lock()
+	defer t.lock.Unlock()
+
+	item := t.items[0]
+	t.items = t.items[1:]
+	return item
+}

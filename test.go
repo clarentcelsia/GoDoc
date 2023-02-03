@@ -1,14 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	// "time"
 
 	// Model "simple-go/model"
+
+	_ "github.com/denisenkom/go-mssqldb"
+
+	// "simple-go/database/worker"
+
 	"simple-go/functions"
 	"simple-go/utils"
+
+	"fmt"
 
 	"github.com/gin-contrib/timeout"
 	"github.com/gin-gonic/gin"
@@ -34,19 +40,7 @@ func Middleware() gin.HandlerFunc {
 }
 
 func main() {
-	// m := new(utils.MyString)
-	// isExist := m.IsExist(strList, str)
-	// fmt.Println(isExist) // >>> true
-
-	// r := gin.Default()
-	// r.Use(Middleware())
-
-	// r.GET("/pagination", utils.GetFiles)
-	// r.GET("/", Handler)
-	// r.Run(":9000")
-
-	// functions.Mutex()
-	// functions.WaitGroupChannel()
+	// worker.Basic()
 }
 
 func Handler(c *gin.Context) {
