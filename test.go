@@ -12,6 +12,7 @@ import (
 	// "simple-go/database/worker"
 
 	"simple-go/functions"
+	"simple-go/network"
 	"simple-go/utils"
 
 	"fmt"
@@ -41,6 +42,19 @@ func Middleware() gin.HandlerFunc {
 
 func main() {
 	// worker.Basic()
+
+	r := gin.Default()
+	r.POST("/test", network.I_Account)
+	r.POST("/get", network.GetAccount)
+	r.POST("/getM", network.GetAccountManual)
+
+	r.POST("/try", utils.TryCatch)
+
+	r.GET("/redis", functions.BasicRedis)
+	r.Run(":9090")
+
+	// utils.TryCatch()
+	// functions.BasicRedis()
 }
 
 func Handler(c *gin.Context) {

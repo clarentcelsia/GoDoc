@@ -1,5 +1,11 @@
 package utils
 
+import (
+	"fmt"
+
+	"github.com/gin-gonic/gin"
+)
+
 type Exception interface{}
 
 type (
@@ -10,8 +16,7 @@ type (
 	}
 )
 
-// note. this panic will be executed last.
-// defer doesn't affect.
+// note. this panic will be run after defer executed.
 func Throw(e Exception) {
 	panic(e)
 }
@@ -34,18 +39,24 @@ func (b *Block) Do() {
 	b.Try()
 }
 
-func TryCatch() {
+func TryCatch(c *gin.Context) {
 	var block = Block{
 		Try: func() {
-			println("Try Block")
+			x := 1
+			y := x / (x - 1)
+			fmt.Println(y)
 		},
 		Catch: func(e Exception) {
-			println(e)
+			fmt.Println("This error printed by catch func")
+			c.JSON(500, gin.H{
+				"errormsg": e.(interface{}), // or just e
+			})
 		},
-		Finally: func() {
-			println("Finally Block")
-		},
+		// Finally: func() {
+		// 	println("Finally Block")
+		// },
 	}
 
 	block.Do()
+	fmt.Println("test")
 }

@@ -31,7 +31,7 @@ func Basic() {
 	// SETTING DB CONFIG
 	config.SetConfig()
 
-	db, err := config.Connect()
+	db, err := config.ConnectDetail()
 	if err != nil {
 		panic(err)
 	}

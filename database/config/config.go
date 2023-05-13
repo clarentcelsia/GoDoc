@@ -14,8 +14,23 @@ func SetConfig() {
 	viper.SetConfigFile("database/config/config.json")
 }
 
-func Connect() (*sql.DB, error) {
-	db := dbConfig(server(), user(), "", scheme())
+func ConnectDetail() (*sql.DB, error) {
+	db := dbConfig(server(), user(), "", detail_scheme())
+	mssql, err := sql.Open("mssql", db)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if errp := mssql.Ping(); errp != nil {
+		return nil, errp
+	}
+
+	return mssql, nil
+}
+
+func ConnectAccount() (*sql.DB, error) {
+	db := dbConfig(server(), user(), "", account_scheme())
 	mssql, err := sql.Open("mssql", db)
 
 	if err != nil {
@@ -37,8 +52,12 @@ func user() string {
 	return viper.GetString("user")
 }
 
-func scheme() string {
-	return viper.GetString("scheme")
+func detail_scheme() string {
+	return viper.GetString("scheme.details")
+}
+
+func account_scheme() string {
+	return viper.GetString("scheme.account")
 }
 
 func dbConfig(server, user, pass, database string) string {
