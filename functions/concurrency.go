@@ -290,3 +290,163 @@ func Mutex() {
 
 	fmt.Println(req.Sum())
 }
+
+// ######### OVERVIEW ######
+
+func ConcurrencyImplementationTypes() {
+	// SingleChannel()
+	// Channel2()
+	Nested()
+}
+
+func SingleChannel() {
+	task := make(chan int)
+	for i := 0; i < 5; i++ {
+		task <- i
+	}
+	close(task) // >>> close the channel when the task is no longer needed to prevent deadlock and memory leaks
+
+	// >>> task channel is not a buffered channel that can received more than 1 value
+	// >>> so basically, channel only receives 1 value
+	// >>> In case above, we're going to print 5 values, so we need to declare a logic that can print all those received values
+
+	// >>> to prevent another deadlock, there're 2 ways to approach this:
+	// >>> 1. Make specified length of channel -> Buffered channel, example below:
+	// >>> task := make(chan int, 5) ...
+	// >>> ... fmt.Println(<-task)
+	// >>> In case above, there are no deadlock because we declare that task receives 5 values max
+	// >>> problem. `fmt.Println(<-task)` only prints the first value
+
+	// >>> Using buffered channel for case above will prevent deadlock but still cannot print all values
+	// >>> to solve this, using loop to `retrieve all received values` even you use buffered or not.
+	for task_5 := range task {
+		fmt.Println(task_5)
+	}
+
+	// NOTE: IF YOU USE `LOOP` TO RETRIEVE THE VALUE, MAKE SURE YOU CLOSE THE CHANNEL OR
+	// LOOP WILL BLOCK INDEFINITELY WAITING FOR MORE VALUES TO BE SENT TO THE CHANNEL, WHICH WILL CAUSE A DEADLOCK. (SEE SINGLECHANNEL2)
+
+}
+
+func SingleChannel2() {
+	// >>> In SingleChannel(), there's is a special case where you dont necessarily close the task.
+	// >>> as long as you dont use `loop` and the value is only 1,
+	connected := make(chan bool, 1)
+	func(connect chan<- bool) {
+		connect <- true
+	}(connected)
+	if isConnect := <-connected; isConnect {
+		fmt.Println(isConnect)
+	}
+}
+
+func ChannelWithWG() {
+	task := make(chan int)
+	go func(task <-chan int) {
+		for task_ := range task {
+			fmt.Println(task_)
+		}
+	}(task)
+
+	for i := 0; i < 5; i++ {
+		task <- i
+	}
+
+	// In case above, without syncronization of waitgroup, the result of task wouldnt be printed
+	// because the main thread already terminated after looping has done their job.
+	// so, to guarantee that the task_ is printed, the recommended approach is to use `WaitGroup` syncronization mechanism.
+
+	// With declaring a WaitGroup, means the main goroutine waits for the goroutine that is reading from the channel to finish its work before exiting,
+	// So the code would be like this:
+
+	var wg sync.WaitGroup
+	task = make(chan int)
+	wg.Add(1)
+	go func(task <-chan int) {
+		defer wg.Done()
+		for task_ := range task {
+			fmt.Println(task_)
+		}
+	}(task)
+
+	for i := 0; i < 5; i++ {
+		task <- i
+	}
+	close(task)
+	wg.Wait()
+}
+
+func Channel2() {
+	var wg sync.WaitGroup // >>> see. ChannelWithWG()
+	var mtx sync.Mutex    // >>> for list
+	task := make(chan int)
+	result := make(chan []int)
+
+	wg.Add(1) // >>> using wait group to make sure that all sent values have been compiled and finished, before terminate the program (by using wg.Wait()).
+	go work(task, result, &mtx)
+	go finish(result, &wg)
+	for i := 0; i < 5; i++ {
+		task <- i
+	}
+	close(task)
+	wg.Wait()
+	fmt.Println("DONE")
+}
+
+func Nested() {
+	var wg sync.WaitGroup
+	data := [][]int{{1, 3, 2, 5, 3}, {1, 2, 3, 6, 3}}
+	for _, d := range data {
+		wg.Add(1)
+		NestedGo(d, &wg)
+	}
+	wg.Wait() // wait all received (goroutine) channels have been executed
+}
+
+func NestedGo(data []int, wg *sync.WaitGroup) {
+	var mtx sync.Mutex
+	result := make(chan []int)
+	done := make(chan []int)
+
+	go work0(data, result, &mtx)
+	go finish0(result, done)
+	go func(done <-chan []int) {
+		defer wg.Done()
+		for d := range done {
+			fmt.Println(d)
+		}
+	}(done)
+}
+
+func work0(data []int, result chan<- []int, mtx *sync.Mutex) {
+	defer close(result) // notify that result has received all values from task
+
+	var list []int
+	list = append(list, data...)
+	result <- list
+}
+
+func finish0(result <-chan []int, done chan<- []int) {
+	for r := range result {
+		fmt.Println("Current list : ", r)
+		done <- r
+	}
+	close(done)
+}
+
+func work(data <-chan int, result chan<- []int, mtx *sync.Mutex) {
+	defer close(result) // notify that result has received all values from task
+
+	var list []int // >>> executed only once, so need mtx
+	for t := range data {
+		list = append(list, t)
+	}
+	result <- list
+}
+
+func finish(result <-chan []int, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for r := range result {
+		fmt.Println("Current list : ", r)
+	}
+}

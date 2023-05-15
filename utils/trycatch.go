@@ -58,5 +58,4 @@ func TryCatch(c *gin.Context) {
 	}
 
 	block.Do()
-	fmt.Println("test")
 }
