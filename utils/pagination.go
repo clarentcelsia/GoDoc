@@ -2,9 +2,9 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"os"
 	"strconv"
 
@@ -62,22 +62,36 @@ func GetFiles(c *gin.Context) {
 	req := Paginating(c)
 
 	list := file["data"].([]interface{})
-	max_per_page := req.Page * len(list)
+	// max_per_page := req.Page * len(list)
 
 	var list_lim []interface{}
-	if (req.Limit * req.Page) <= len(list) {
-		fmt.Println("MASIH DALAM RENTANG LIST")
-		list_lim = list[((req.Page * req.Limit) - req.Limit):(req.Limit * req.Page):len(list)]
-	} else if !((len(list) / req.Limit) < 1) && !((req.Page*req.Limit)-req.Limit >= len(list)) {
-		fmt.Println("DALAM RENTANG TAPI KELEBIHAN")
-		list_lim = list[((req.Page * req.Limit) - req.Limit):len(list)]
-	} else if ((req.Limit*req.Page)%len(list)) != 0 && (req.Limit <= max_per_page) && !((req.Page*req.Limit)-req.Limit >= len(list)) {
-		fmt.Println("LIMIT DILUAR RENTANG LIST TAPI MASIH ADA SISA LIST DI PAGE")
-		list_lim = list[((req.Page * req.Limit) - req.Limit):len(list)]
-	} else {
-		fmt.Println("LIMIT DAN PAGE DILUAR RENTANG LIST")
-		list_lim = nil
+	start := (req.Page - 1) * req.Limit
+	end := req.Limit + ((req.Page - 1) * req.Limit)
+	lastpage := int(math.Ceil(float64(len(list)) / float64(req.Limit)))
+	if req.Page > lastpage || end > len(list) {
+		if req.Page > lastpage {
+			start = 0
+			end = 0
+		} else if end > len(list) {
+			end = len(list)
+		}
 	}
+
+	list_lim = list[start:end]
+
+	// if (req.Limit * req.Page) <= len(list) {
+	// 	fmt.Println("MASIH DALAM RENTANG LIST")
+	// 	list_lim = list[((req.Page * req.Limit) - req.Limit):(req.Limit * req.Page):len(list)]
+	// } else if !((len(list) / req.Limit) < 1) && !((req.Page*req.Limit)-req.Limit >= len(list)) {
+	// 	fmt.Println("DALAM RENTANG TAPI KELEBIHAN")
+	// 	list_lim = list[((req.Page * req.Limit) - req.Limit):len(list)]
+	// } else if ((req.Limit*req.Page)%len(list)) != 0 && (req.Limit <= max_per_page) && !((req.Page*req.Limit)-req.Limit >= len(list)) {
+	// 	fmt.Println("LIMIT DILUAR RENTANG LIST TAPI MASIH ADA SISA LIST DI PAGE")
+	// 	list_lim = list[((req.Page * req.Limit) - req.Limit):len(list)]
+	// } else {
+	// 	fmt.Println("LIMIT DAN PAGE DILUAR RENTANG LIST")
+	// 	list_lim = nil
+	// }
 
 	c.JSON(200, list_lim)
 

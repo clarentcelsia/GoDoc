@@ -42,7 +42,7 @@ func Middleware() gin.HandlerFunc {
 func main() {
 	// worker.Basic()
 
-	// r := gin.Default()
+	r := gin.Default()
 	// r.POST("/test", network.I_Account)
 	// r.POST("/get", network.GetAccount)
 	// r.POST("/getM", network.GetAccountManual)
@@ -50,7 +50,8 @@ func main() {
 	// r.POST("/try", utils.TryCatch)
 
 	// r.GET("/redis", functions.BasicRedis)
-	// r.Run(":9090")
+	r.POST("/pagination", utils.GetFiles)
+	r.Run(":9090")
 
 	functions.ConcurrencyImplementationTypes()
 }
