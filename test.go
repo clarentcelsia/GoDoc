@@ -47,7 +47,7 @@ func main() {
 	// r.POST("/get", network.GetAccount)
 	// r.POST("/getM", network.GetAccountManual)
 
-	// r.POST("/try", utils.TryCatch)
+	r.POST("/try", utils.TryCatch)
 
 	// r.GET("/redis", functions.BasicRedis)
 	r.POST("/pagination", utils.GetFiles)

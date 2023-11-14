@@ -39,12 +39,19 @@ func (b *Block) Do() {
 	b.Try()
 }
 
+var q []string
+
 func TryCatch(c *gin.Context) {
 	var block = Block{
 		Try: func() {
-			x := 1
-			y := x / (x - 1)
-			fmt.Println(y)
+			// x := 1
+			// y := x / (x - 1)
+			defer func() {
+				fmt.Println("TEST")
+			}()
+			q = append(q, "test")
+			fmt.Println(q)
+			return
 		},
 		Catch: func(e Exception) {
 			fmt.Println("This error printed by catch func")
@@ -52,9 +59,9 @@ func TryCatch(c *gin.Context) {
 				"errormsg": e.(interface{}), // or just e
 			})
 		},
-		// Finally: func() {
-		// 	println("Finally Block")
-		// },
+		Finally: func() {
+			println("Finally Block")
+		},
 	}
 
 	block.Do()

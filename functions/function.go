@@ -126,6 +126,24 @@ func Interface() {
 	}
 }
 
+func SignInterfaceToStruct() {
+	type EXAMPLE struct {
+		A string
+		B int
+	}
+
+	var inter interface{}
+	inter = EXAMPLE{
+		A: "Hello",
+		B: 1,
+	}
+
+	var sign, ok = inter.(EXAMPLE)
+	if ok {
+		fmt.Println(sign) // >>> {"Hello", 1}
+	}
+}
+
 func StructAsMapKeysAndValues() {
 	type Students struct {
 		Name string
