@@ -9,10 +9,12 @@ import (
 
 	_ "github.com/denisenkom/go-mssqldb"
 
-	// "simple-go/database/worker"
-
+	"simple-go/database/worker"
 	"simple-go/functions"
 	"simple-go/utils"
+
+	// "simple-go/functions"
+	// "simple-go/utils"
 
 	"fmt"
 
@@ -40,20 +42,20 @@ func Middleware() gin.HandlerFunc {
 }
 
 func main() {
-	// worker.Basic()
+	worker.Basic()
 
-	r := gin.Default()
+	// r := gin.Default()
 	// r.POST("/test", network.I_Account)
 	// r.POST("/get", network.GetAccount)
 	// r.POST("/getM", network.GetAccountManual)
 
-	r.POST("/try", utils.TryCatch)
+	// r.POST("/try", utils.TryCatch)
 
 	// r.GET("/redis", functions.BasicRedis)
-	r.POST("/pagination", utils.GetFiles)
-	r.Run(":9090")
+	// r.POST("/pagination", utils.GetFiles)
+	// r.Run(":9090")
 
-	functions.ConcurrencyImplementationTypes()
+	// functions.ConcurrencyImplementationTypes()
 }
 
 func Handler(c *gin.Context) {
